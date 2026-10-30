@@ -12,6 +12,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Combobox,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxInputGroup,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+} from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -169,29 +180,44 @@ export function MatriculaForm({
               name="alunoId"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="alunoId" className="w-full">
-                    <SelectValue placeholder="Selecione o aluno">
-                      {(value: string | null) =>
-                        alunos.find((aluno) => aluno.id === value)?.nome ??
-                        "Selecione o aluno"
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {alunos.length === 0 ? (
-                      <p className="px-2 py-1.5 text-sm text-muted-foreground">
-                        Não há alunos sem matrícula
-                      </p>
-                    ) : (
-                      alunos.map((aluno) => (
-                        <SelectItem key={aluno.id} value={aluno.id}>
-                          {aluno.nome} — {aluno.cpf}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                <Combobox
+                  items={alunos}
+                  itemToStringLabel={(aluno: Aluno) => aluno.nome}
+                  value={
+                    alunos.find((aluno) => aluno.id === field.value) ?? null
+                  }
+                  onValueChange={(aluno: Aluno | null) =>
+                    field.onChange(aluno?.id ?? "")
+                  }
+                >
+                  <ComboboxInputGroup>
+                    <ComboboxInput
+                      id="alunoId"
+                      placeholder="Digite o nome do aluno"
+                    />
+                    <ComboboxClear aria-label="Limpar aluno" />
+                    <ComboboxTrigger aria-label="Abrir lista de alunos" />
+                  </ComboboxInputGroup>
+                  <ComboboxContent>
+                    <ComboboxEmpty>
+                      {alunos.length === 0
+                        ? "Não há alunos sem matrícula"
+                        : "Nenhum aluno encontrado"}
+                    </ComboboxEmpty>
+                    <ComboboxList>
+                      {(aluno: Aluno) => (
+                        <ComboboxItem key={aluno.id} value={aluno}>
+                          <span className="flex flex-col">
+                            <span>{aluno.nome}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {aluno.cpf}
+                            </span>
+                          </span>
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               )}
             />
             {errors.alunoId && (
