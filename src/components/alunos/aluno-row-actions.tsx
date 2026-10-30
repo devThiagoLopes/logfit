@@ -16,7 +16,12 @@ export function AlunoRowActions({ aluno }: { aluno: Aluno }) {
       <AlunoFormDialog
         aluno={aluno}
         trigger={
-          <Button variant="ghost" size="icon-sm" aria-label="Editar aluno">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Editar aluno"
+            className="hover:bg-zinc-500/10 hover:text-zinc-700"
+          >
             <Pencil />
           </Button>
         }

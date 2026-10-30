@@ -50,7 +50,12 @@ export function AlunoDeleteDialog({ aluno }: { aluno: Aluno }) {
     >
       <AlertDialogTrigger
         render={
-          <Button variant="ghost" size="icon-sm" aria-label="Excluir aluno">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Excluir aluno"
+            className="hover:bg-destructive/10 hover:text-destructive"
+          >
             <Trash2 />
           </Button>
         }

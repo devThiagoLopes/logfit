@@ -19,7 +19,12 @@ export function UsuarioRowActions({
       <UsuarioFormDialog
         usuario={usuario}
         trigger={
-          <Button variant="ghost" size="icon-sm" aria-label="Editar usuário">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Editar usuário"
+            className="hover:bg-zinc-500/10 hover:text-zinc-700"
+          >
             <Pencil />
           </Button>
         }

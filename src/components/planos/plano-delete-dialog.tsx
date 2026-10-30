@@ -50,7 +50,12 @@ export function PlanoDeleteDialog({ plano }: { plano: Plano }) {
     >
       <AlertDialogTrigger
         render={
-          <Button variant="ghost" size="icon-sm" aria-label="Excluir plano">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Excluir plano"
+            className="hover:bg-destructive/10 hover:text-destructive"
+          >
             <Trash2 />
           </Button>
         }

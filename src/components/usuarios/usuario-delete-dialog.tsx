@@ -50,7 +50,12 @@ export function UsuarioDeleteDialog({ usuario }: { usuario: Usuario }) {
     >
       <AlertDialogTrigger
         render={
-          <Button variant="ghost" size="icon-sm" aria-label="Remover acesso">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Remover acesso"
+            className="hover:bg-destructive/10 hover:text-destructive"
+          >
             <Trash2 />
           </Button>
         }

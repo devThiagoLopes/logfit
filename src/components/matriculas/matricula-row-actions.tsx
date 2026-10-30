@@ -59,6 +59,7 @@ export function MatriculaRowActions({
             variant="ghost"
             size="icon-sm"
             aria-label="Cancelar matrícula"
+            className="hover:bg-destructive/10 hover:text-destructive"
           >
             <Ban />
           </Button>
