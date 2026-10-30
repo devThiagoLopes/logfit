@@ -7,8 +7,9 @@ import { MatriculaTableRow } from "@/components/matriculas/matricula-table-row";
 import { PERIODICIDADES } from "@/constants/periodicidade";
 import {
   getMatriculas,
+  getSituacaoExibicao,
   getSituacaoMatricula,
-  type MatriculaSituacao,
+  type MatriculaSituacaoExibicao,
 } from "@/services/matriculas";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -16,16 +17,18 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   timeStyle: "short",
 });
 
-const SITUACAO_LABEL: Record<MatriculaSituacao, string> = {
+const SITUACAO_LABEL: Record<MatriculaSituacaoExibicao, string> = {
   aguardando_assinatura: "Aguardando assinatura",
   ativa: "Ativa",
+  pendente: "Pagamento pendente",
   expirada: "Expirada",
   cancelada: "Cancelada",
 };
 
-const SITUACAO_CLASS: Record<MatriculaSituacao, string> = {
+const SITUACAO_CLASS: Record<MatriculaSituacaoExibicao, string> = {
   aguardando_assinatura: "bg-amber-100 text-amber-800",
   ativa: "bg-emerald-100 text-emerald-800",
+  pendente: "bg-amber-100 text-amber-800",
   expirada: "bg-red-100 text-red-800",
   cancelada: "bg-slate-200 text-slate-700",
 };
@@ -104,9 +107,15 @@ export default async function MatriculasPage({
             </thead>
             <tbody className="divide-y divide-border">
               {matriculas.map((item) => {
-                const situacao = getSituacaoMatricula(
+                const situacaoBase = getSituacaoMatricula(
                   item.status,
                   item.dataExpiracao,
+                );
+                const primeiraParcelaPendente =
+                  item.primeiraParcelaStatus === "pendente";
+                const situacao = getSituacaoExibicao(
+                  situacaoBase,
+                  primeiraParcelaPendente,
                 );
 
                 return (
