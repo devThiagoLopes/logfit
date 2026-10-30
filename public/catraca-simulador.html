@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simulador de Catraca</title>
+<style>
+  :root {
+    --bg: #1c1c1c;
+    --panel: #272727;
+    --border: #3a3a3a;
+    --text: #f4f4f4;
+    --muted: #a1a1a1;
+    --green: #22c55e;
+    --red: #ef4444;
+    --gray: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.subtitle { color: var(--muted); font-size: 14px; margin: 0 0 28px; text-align: center; max-width: 480px; }
+
+  .layout {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1 1 320px;
+  }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; margin-top: 14px; }
+  label:first-of-type { margin-top: 0; }
+  input, select {
+    width: 100%;
+    background: #1f1f1f;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .radio-row { display: flex; gap: 16px; margin-top: 6px; }
+  .radio-row label { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--text); font-size: 13px; }
+  .radio-row input { width: auto; }
+
+  button {
+    margin-top: 20px;
+    width: 100%;
+    background: var(--text);
+    color: #111;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.6; cursor: wait; }
+
+  .turnstile-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .turnstile {
+    width: 180px;
+    height: 180px;
+    position: relative;
+  }
+  .turnstile svg { width: 100%; height: 100%; display: block; }
+  .hub { fill: #44464a; }
+  .arm {
+    fill: var(--gray);
+    transform-origin: 90px 90px;
+    transition: fill 300ms ease;
+  }
+  .ring {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 4;
+    transition: stroke 300ms ease;
+  }
+
+  .turnstile.liberado .arm { fill: var(--green); animation: girar 700ms ease-in-out; }
+  .turnstile.liberado .ring { stroke: var(--green); }
+  .turnstile.negado .arm { fill: var(--red); }
+  .turnstile.negado .ring { stroke: var(--red); }
+  .turnstile.negado { animation: tremer 400ms ease; }
+
+  @keyframes girar {
+    0% { transform: rotate(0deg); }
+    60% { transform: rotate(130deg); }
+    100% { transform: rotate(120deg); }
+  }
+  @keyframes tremer {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .status-label {
+    font-size: 15px;
+    font-weight: 600;
+    min-height: 20px;
+  }
+  .status-label.liberado { color: var(--green); }
+  .status-label.negado { color: var(--red); }
+  .status-motivo { color: var(--muted); font-size: 13px; min-height: 16px; }
+
+  .log {
+    width: 100%;
+    max-width: 760px;
+    margin-top: 32px;
+  }
+  .log h2 { font-size: 14px; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .log ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .log li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.liberado { background: var(--green); }
+  .dot.negado { background: var(--red); }
+  .log .time { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+  .error-banner {
+    background: #3a1d1d;
+    border: 1px solid #6b2c2c;
+    color: #fca5a5;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    margin-top: 14px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <h1>Simulador de catraca</h1>
+  <p class="subtitle">
+    Representa o dispositivo/middleware da catraca: chama
+    <code>/api/checkin/autorizar</code> e depois <code>/api/checkin/eventos</code>
+    exatamente como um equipamento real faria.
+  </p>
+
+  <div class="layout">
+    <div class="panel">
+      <label for="token">Token do dispositivo</label>
+      <input id="token" type="text" placeholder="Copiado em /sensores" />
+
+      <label>Identificador</label>
+      <div class="radio-row">
+        <label><input type="radio" name="tipo" value="matricula" checked /> Matrícula</label>
+        <label><input type="radio" name="tipo" value="cpf" /> CPF</label>
+      </div>
+
+      <label for="valor">Valor</label>
+      <input id="valor" type="text" placeholder="Ex: 1" />
+
+      <label for="sentido">Sentido</label>
+      <select id="sentido">
+        <option value="entrada">Entrada</option>
+        <option value="saida">Saída</option>
+      </select>
+
+      <button id="btn-simular">Simular acesso</button>
+
+      <div class="error-banner" id="error-banner"></div>
+    </div>
+
+    <div class="panel turnstile-wrap">
+      <div class="turnstile" id="turnstile">
+        <svg viewBox="0 0 180 180">
+          <circle class="ring" cx="90" cy="90" r="70" />
+          <g class="arm">
+            <rect x="86" y="20" width="8" height="140" rx="4" />
+            <rect x="86" y="20" width="8" height="140" rx="4" transform="rotate(120 90 90)" />
+            <rect x="86" y="20" width="8" height="140" rx="4" transform="rotate(240 90 90)" />
+          </g>
+          <circle class="hub" cx="90" cy="90" r="14" />
+        </svg>
+      </div>
+      <div class="status-label" id="status-label"></div>
+      <div class="status-motivo" id="status-motivo"></div>
+    </div>
+  </div>
+
+  <div class="log">
+    <h2>Últimas simulações (nesta página)</h2>
+    <ul id="log-list"></ul>
+  </div>
+
+<script>
+  const API_BASE = window.location.origin;
+  const tokenInput = document.getElementById("token");
+  const valorInput = document.getElementById("valor");
+  const sentidoInput = document.getElementById("sentido");
+  const btnSimular = document.getElementById("btn-simular");
+  const turnstileEl = document.getElementById("turnstile");
+  const statusLabel = document.getElementById("status-label");
+  const statusMotivo = document.getElementById("status-motivo");
+  const errorBanner = document.getElementById("error-banner");
+  const logList = document.getElementById("log-list");
+
+  tokenInput.value = localStorage.getItem("catraca-sim-token") || "";
+  tokenInput.addEventListener("input", () => {
+    localStorage.setItem("catraca-sim-token", tokenInput.value.trim());
+  });
+
+  function tipoSelecionado() {
+    return document.querySelector('input[name="tipo"]:checked').value;
+  }
+
+  function montarIdentificador() {
+    const valor = valorInput.value.trim();
+    const tipo = tipoSelecionado();
+    if (!valor) return null;
+    return tipo === "matricula"
+      ? { matricula: Number(valor) }
+      : { cpf: valor };
+  }
+
+  function mostrarErro(mensagem) {
+    errorBanner.textContent = mensagem;
+    errorBanner.style.display = mensagem ? "block" : "none";
+  }
+
+  function adicionarAoLog(liberado, texto) {
+    const li = document.createElement("li");
+    const dot = document.createElement("span");
+    dot.className = "dot " + (liberado ? "liberado" : "negado");
+    const label = document.createElement("span");
+    label.textContent = texto;
+    const time = document.createElement("span");
+    time.className = "time";
+    time.textContent = new Date().toLocaleTimeString("pt-BR");
+    li.append(dot, label, time);
+    logList.prepend(li);
+  }
+
+  async function simular() {
+    mostrarErro("");
+    const token = tokenInput.value.trim();
+    const identificador = montarIdentificador();
+
+    if (!token) return mostrarErro("Informe o token do dispositivo (copiado em /sensores).");
+    if (!identificador) return mostrarErro("Informe a matrícula ou o CPF.");
+
+    btnSimular.disabled = true;
+    turnstileEl.className = "turnstile";
+    statusLabel.textContent = "";
+    statusMotivo.textContent = "";
+
+    try {
+      const autorizarResp = await fetch(`${API_BASE}/api/checkin/autorizar`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(identificador),
+      });
+
+      if (autorizarResp.status === 401) {
+        mostrarErro("Token do dispositivo inválido ou inativo (401).");
+        return;
+      }
+
+      const resultado = await autorizarResp.json();
+
+      if (!autorizarResp.ok) {
+        mostrarErro(resultado.error || "Erro ao consultar autorização.");
+        return;
+      }
+
+      const liberado = Boolean(resultado.liberado);
+      turnstileEl.classList.add(liberado ? "liberado" : "negado");
+      statusLabel.className = "status-label " + (liberado ? "liberado" : "negado");
+      statusLabel.textContent = liberado ? "LIBERADO" : "NEGADO";
+      statusMotivo.textContent = liberado
+        ? `Bem-vindo, ${resultado.aluno?.nome ?? ""}`
+        : resultado.motivo || "";
+
+      const nomeOuIdentificador = liberado
+        ? resultado.aluno?.nome ?? "Aluno"
+        : `Identificador ${JSON.stringify(identificador)}`;
+      adicionarAoLog(liberado, `${nomeOuIdentificador} — ${liberado ? "liberado" : resultado.motivo}`);
+
+      await fetch(`${API_BASE}/api/checkin/eventos`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...identificador,
+          liberado,
+          motivo: liberado ? undefined : resultado.motivo,
+          sentido: sentidoInput.value,
+          ocorridoEm: new Date().toISOString(),
+        }),
+      });
+    } catch (error) {
+      mostrarErro("Não foi possível falar com o servidor. O dev server está rodando?");
+    } finally {
+      btnSimular.disabled = false;
+    }
+  }
+
+  btnSimular.addEventListener("click", simular);
+</script>
+</body>
+</html>
