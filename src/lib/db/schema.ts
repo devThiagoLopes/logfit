@@ -11,5 +11,9 @@ export * from "./matricula-historico-schema";
 
 export * from "./pagamento-schema";
 
+export * from "./dispositivo-schema";
+
+export * from "./checkin-schema";
+
 // Demais tabelas serão adicionadas aqui conforme os módulos forem implementados
-// (treinos, aulas, check-in, etc.).
+// (treinos, aulas, etc.).

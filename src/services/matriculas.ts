@@ -33,6 +33,21 @@ export const MATRICULA_SITUACOES = [
 
 export type MatriculaSituacao = (typeof MATRICULA_SITUACOES)[number];
 
+// Situação exibida nas telas: igual à situação de negócio, exceto que
+// "ativa" com a primeira parcela ainda pendente aparece como "pendente" —
+// contrato assinado não é suficiente, só conta como ativa de fato depois do
+// primeiro pagamento (mesma regra usada na autorização de acesso da catraca).
+export type MatriculaSituacaoExibicao = MatriculaSituacao | "pendente";
+
+export function getSituacaoExibicao(
+  situacao: MatriculaSituacao,
+  primeiraParcelaPendente: boolean,
+): MatriculaSituacaoExibicao {
+  return situacao === "ativa" && primeiraParcelaPendente
+    ? "pendente"
+    : situacao;
+}
+
 export const PRAZO_REABERTURA_DIAS = 10;
 
 // ===== Erros de domínio =====
@@ -148,10 +163,18 @@ export async function getMatriculas(filtro?: { planoId?: string }) {
       alunoNome: aluno.nome,
       planoId: plano.id,
       planoNome: plano.nome,
+      primeiraParcelaStatus: pagamento.status,
     })
     .from(matricula)
     .innerJoin(aluno, eq(matricula.alunoId, aluno.id))
     .innerJoin(plano, eq(matricula.planoId, plano.id))
+    .leftJoin(
+      pagamento,
+      and(
+        eq(pagamento.matriculaId, matricula.id),
+        eq(pagamento.numeroParcela, 1),
+      ),
+    )
     .where(filtro?.planoId ? eq(matricula.planoId, filtro.planoId) : undefined)
     .orderBy(desc(matricula.createdAt));
 }
@@ -218,11 +241,36 @@ export async function getMatriculasByAluno(alunoId: string) {
       dataExpiracao: matricula.dataExpiracao,
       createdAt: matricula.createdAt,
       planoNome: plano.nome,
+      primeiraParcelaStatus: pagamento.status,
     })
     .from(matricula)
     .innerJoin(plano, eq(matricula.planoId, plano.id))
+    .leftJoin(
+      pagamento,
+      and(
+        eq(pagamento.matriculaId, matricula.id),
+        eq(pagamento.numeroParcela, 1),
+      ),
+    )
     .where(eq(matricula.alunoId, alunoId))
     .orderBy(desc(matricula.createdAt));
+}
+
+// Usada pela autorização de acesso da catraca: situação é sempre calculada
+// a partir da matrícula mais recente do aluno (getSituacaoMatricula).
+export async function getUltimaMatriculaDoAluno(alunoId: string) {
+  const [row] = await getDb()
+    .select({
+      id: matricula.id,
+      status: matricula.status,
+      dataExpiracao: matricula.dataExpiracao,
+    })
+    .from(matricula)
+    .where(eq(matricula.alunoId, alunoId))
+    .orderBy(desc(matricula.createdAt))
+    .limit(1);
+
+  return row;
 }
 
 export async function getMatriculaStatus(id: string) {

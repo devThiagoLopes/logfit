@@ -129,6 +129,44 @@ export async function getPagamentosByMatricula(matriculaId: string) {
     .orderBy(asc(pagamento.numeroParcela));
 }
 
+// Usada pela autorização de acesso da catraca: mesmo com o contrato
+// assinado, o aluno só fica "ativo" de fato depois que a primeira parcela é
+// confirmada — antes disso a matrícula está pendente de pagamento.
+export async function temPrimeiraParcelaPendente(matriculaId: string) {
+  const [row] = await getDb()
+    .select({ id: pagamento.id })
+    .from(pagamento)
+    .where(
+      and(
+        eq(pagamento.matriculaId, matriculaId),
+        eq(pagamento.numeroParcela, 1),
+        eq(pagamento.status, "pendente"),
+      ),
+    )
+    .limit(1);
+
+  return Boolean(row);
+}
+
+// Usada pela autorização de acesso da catraca: parcela pendente cujo
+// vencimento já passou, independente de regenerar mensalidades antes.
+export async function temPagamentoAtrasado(alunoId: string) {
+  const [row] = await getDb()
+    .select({ id: pagamento.id })
+    .from(pagamento)
+    .innerJoin(matricula, eq(pagamento.matriculaId, matricula.id))
+    .where(
+      and(
+        eq(matricula.alunoId, alunoId),
+        eq(pagamento.status, "pendente"),
+        lt(pagamento.vencimento, new Date()),
+      ),
+    )
+    .limit(1);
+
+  return Boolean(row);
+}
+
 // ===== Mutações =====
 
 export async function concluirPagamento(

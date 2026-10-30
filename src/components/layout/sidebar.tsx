@@ -8,6 +8,7 @@ import {
   LogOut,
   Radio,
   Receipt,
+  ScanLine,
   UserCog,
   Users,
   Wallet,
@@ -22,6 +23,7 @@ const navGroups = [
     { href: "/alunos", label: "Alunos", icon: Users },
     { href: "/matriculas", label: "Matrículas", icon: ClipboardList },
     { href: "/pagamentos", label: "Pagamentos", icon: Receipt },
+    { href: "/checkin", label: "Check-in", icon: ScanLine },
   ],
   [
     { href: "/usuarios", label: "Usuários", icon: UserCog },

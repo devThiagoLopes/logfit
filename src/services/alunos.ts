@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNull, notExists, or } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, notExists, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import { aluno } from "@/lib/db/aluno-schema";
@@ -39,6 +39,25 @@ export async function getAlunoById(id: string) {
     .from(aluno)
     .where(eq(aluno.id, id))
     .limit(1);
+
+  return row;
+}
+
+// Resolve o aluno a partir do identificador que a catraca envia. O CPF é
+// comparado só pelos dígitos, já que o dispositivo pode mandar com ou sem
+// máscara e o campo é armazenado formatado (000.000.000-00).
+export async function getAlunoByMatriculaOuCpf(identificador: {
+  matricula?: number;
+  cpf?: string;
+}) {
+  const condicao = identificador.matricula
+    ? eq(aluno.matricula, identificador.matricula)
+    : eq(
+        sql`regexp_replace(${aluno.cpf}, '[^0-9]', '', 'g')`,
+        identificador.cpf!.replace(/\D/g, ""),
+      );
+
+  const [row] = await getDb().select().from(aluno).where(condicao).limit(1);
 
   return row;
 }
