@@ -25,6 +25,7 @@ import {
   type CreateAlunoFormInput,
 } from "@/lib/validations/aluno";
 import { getEnderecoByCep } from "@/services/cep";
+import { maskCep, maskCpf, maskTelefone } from "@/lib/masks";
 
 const generoLabels: Record<(typeof ALUNO_GENEROS)[number], string> = {
   masculino: "Masculino",
@@ -50,9 +51,9 @@ function alunoToDefaultValues(
     bairro: aluno.bairro ?? "",
     cidade: aluno.cidade ?? "",
     uf: aluno.uf ?? "",
-    cep: aluno.cep ?? "",
-    telefone: aluno.telefone,
-    cpf: aluno.cpf,
+    cep: aluno.cep ? maskCep(aluno.cep) : "",
+    telefone: maskTelefone(aluno.telefone),
+    cpf: maskCpf(aluno.cpf),
     rg: aluno.rg ?? "",
     situacao: aluno.situacao,
     debito: Number(aluno.debito),
@@ -88,7 +89,13 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
     defaultValues,
   });
 
+  const telefoneField = register("telefone");
+  const cpfField = register("cpf");
+  const cepField = register("cep");
+
   async function handleCepBlur(event: React.FocusEvent<HTMLInputElement>) {
+    cepField.onBlur(event);
+
     const cep = event.target.value;
     const digits = cep.replace(/\D/g, "");
     if (digits.length !== 8) return;
@@ -165,6 +172,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
               <Input
                 id="nome"
                 placeholder="Nome completo"
+                maxLength={100}
                 {...register("nome")}
               />
               {errors.nome && (
@@ -180,6 +188,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
                 id="email"
                 type="email"
                 placeholder="aluno@email.com"
+                maxLength={160}
                 {...register("email")}
               />
               {errors.email && (
@@ -194,7 +203,12 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
               <Input
                 id="telefone"
                 placeholder="(00) 00000-0000"
-                {...register("telefone")}
+                maxLength={15}
+                {...telefoneField}
+                onChange={(event) => {
+                  event.target.value = maskTelefone(event.target.value);
+                  telefoneField.onChange(event);
+                }}
               />
               {errors.telefone && (
                 <p className="text-sm text-destructive">
@@ -242,7 +256,12 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
               <Input
                 id="cpf"
                 placeholder="000.000.000-00"
-                {...register("cpf")}
+                maxLength={14}
+                {...cpfField}
+                onChange={(event) => {
+                  event.target.value = maskCpf(event.target.value);
+                  cpfField.onChange(event);
+                }}
               />
               {errors.cpf && (
                 <p className="text-sm text-destructive">
@@ -253,7 +272,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="rg">RG</Label>
-              <Input id="rg" {...register("rg")} />
+              <Input id="rg" maxLength={20} {...register("rg")} />
             </div>
           </div>
         </div>
@@ -270,7 +289,12 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
                 id="cep"
                 placeholder="00000-000"
                 maxLength={9}
-                {...register("cep", { onBlur: handleCepBlur })}
+                {...cepField}
+                onChange={(event) => {
+                  event.target.value = maskCep(event.target.value);
+                  cepField.onChange(event);
+                }}
+                onBlur={handleCepBlur}
               />
               {isBuscandoCep && (
                 <p className="text-xs text-muted-foreground">
@@ -289,6 +313,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
               <Input
                 id="endereco"
                 placeholder="Nome da rua"
+                maxLength={120}
                 {...register("endereco")}
               />
             </div>
@@ -297,17 +322,22 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_2fr_1fr_1fr]">
             <div className="space-y-2">
               <Label htmlFor="bairro">Bairro</Label>
-              <Input id="bairro" {...register("bairro")} />
+              <Input id="bairro" maxLength={80} {...register("bairro")} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="cidade">Cidade</Label>
-              <Input id="cidade" {...register("cidade")} />
+              <Input id="cidade" maxLength={80} {...register("cidade")} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="numero">Número</Label>
-              <Input id="numero" placeholder="Nº" {...register("numero")} />
+              <Input
+                id="numero"
+                placeholder="Nº"
+                maxLength={10}
+                {...register("numero")}
+              />
             </div>
 
             <div className="space-y-2">
@@ -346,6 +376,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
             id="observacoes"
             rows={3}
             placeholder="Anotações sobre saúde, restrições, histórico..."
+            maxLength={1000}
             {...register("observacoes")}
           />
         </div>
