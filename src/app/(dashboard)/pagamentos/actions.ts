@@ -47,5 +47,7 @@ export async function concluirPagamentoAction(
   }
 
   revalidatePath("/pagamentos");
+  revalidatePath("/matriculas");
+  revalidatePath("/alunos");
   return { success: true };
 }

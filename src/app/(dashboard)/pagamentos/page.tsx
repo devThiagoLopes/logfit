@@ -1,5 +1,7 @@
 import { Receipt } from "lucide-react";
 
+import { PagamentoAcaoCell } from "@/components/pagamentos/pagamento-acao-cell";
+import { PagamentoTableRow } from "@/components/pagamentos/pagamento-table-row";
 import { PeriodoFilter } from "@/components/pagamentos/periodo-filter";
 import { FORMAS_PAGAMENTO_OPCOES } from "@/constants/forma-pagamento";
 import { PERIODICIDADES } from "@/constants/periodicidade";
@@ -80,11 +82,12 @@ export default async function PagamentosPage({
                 <th className="px-4 py-3 font-medium">Pagamento</th>
                 <th className="px-4 py-3 font-medium">Data</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {pagamentos.map((item) => (
-                <tr key={item.id} className="transition-colors hover:bg-muted/50">
+                <PagamentoTableRow key={item.id} matriculaId={item.matriculaId}>
                   <td className="px-4 py-3 font-medium text-foreground">
                     {item.alunoNome}
                   </td>
@@ -126,7 +129,15 @@ export default async function PagamentosPage({
                       {STATUS_LABEL[item.status]}
                     </span>
                   </td>
-                </tr>
+                  <td className="px-4 py-3 text-right">
+                    <PagamentoAcaoCell
+                      pagamentoId={item.id}
+                      alunoNome={item.alunoNome}
+                      valor={item.valor}
+                      pendente={item.status === "pendente"}
+                    />
+                  </td>
+                </PagamentoTableRow>
               ))}
             </tbody>
           </table>

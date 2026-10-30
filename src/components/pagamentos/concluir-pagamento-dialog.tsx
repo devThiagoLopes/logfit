@@ -39,12 +39,14 @@ type ConcluirPagamentoDialogProps = {
   pagamentoId: string;
   alunoNome: string;
   valor: string;
+  trigger?: React.ReactElement;
 };
 
 export function ConcluirPagamentoDialog({
   pagamentoId,
   alunoNome,
   valor,
+  trigger,
 }: ConcluirPagamentoDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -89,7 +91,7 @@ export function ConcluirPagamentoDialog({
         }
       }}
     >
-      <DialogTrigger render={<Button size="sm">Concluir</Button>} />
+      <DialogTrigger render={trigger ?? <Button size="sm">Concluir</Button>} />
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
