@@ -26,7 +26,12 @@ export async function createDispositivo(input: CreateDispositivoInput) {
 
   const [created] = await getDb()
     .insert(dispositivo)
-    .values({ nome: data.nome, local: data.local ?? null })
+    .values({
+      nome: data.nome,
+      local: data.local ?? null,
+      tipo: data.tipo,
+      lotacaoMaxima: data.lotacaoMaxima ?? null,
+    })
     .returning();
 
   return created;
@@ -40,7 +45,12 @@ export async function updateDispositivo(
 
   const [updated] = await getDb()
     .update(dispositivo)
-    .set({ nome: data.nome, local: data.local ?? null })
+    .set({
+      nome: data.nome,
+      local: data.local ?? null,
+      tipo: data.tipo,
+      lotacaoMaxima: data.lotacaoMaxima ?? null,
+    })
     .where(eq(dispositivo.id, id))
     .returning();
 

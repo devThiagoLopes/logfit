@@ -1,4 +1,6 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const DISPOSITIVO_TIPOS = ["catraca", "vibracao"] as const;
 
 export const dispositivo = pgTable("dispositivo", {
   id: text("id")
@@ -6,6 +8,10 @@ export const dispositivo = pgTable("dispositivo", {
     .$defaultFn(() => crypto.randomUUID()),
   nome: text("nome").notNull(),
   local: text("local"),
+  tipo: text("tipo", { enum: DISPOSITIVO_TIPOS }).default("catraca").notNull(),
+  // Só se aplica a tipo "catraca": capacidade máxima de pessoas simultâneas
+  // monitorada por esse dispositivo.
+  lotacaoMaxima: integer("lotacao_maxima"),
   // Segredo usado pelo dispositivo/middleware do fabricante no header
   // Authorization: Bearer <token> das rotas de catraca. Mesmo padrão de
   // matricula.token: UUID gerado no banco, sem hashing.

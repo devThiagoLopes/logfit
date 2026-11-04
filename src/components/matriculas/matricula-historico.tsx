@@ -32,9 +32,12 @@ export function MatriculaHistoricoTimeline({
     );
   }
 
+  // Mais recente primeiro, igual a qualquer timeline de atividade.
+  const eventosRecentesPrimeiro = [...eventos].reverse();
+
   return (
-    <ol className="space-y-4">
-      {eventos.map((evento) => {
+    <ol className="max-h-96 space-y-4 overflow-y-auto pr-1">
+      {eventosRecentesPrimeiro.map((evento) => {
         const Icon = TIPO_ICON[evento.tipo] ?? FilePlus2;
 
         return (

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 import { getCheckinsRecentesAction } from "@/app/(dashboard)/checkin/actions";
+import { cn } from "@/lib/utils";
 import type { getCheckinsRecentes } from "@/services/checkins";
 
 const timeFormatter = new Intl.DateTimeFormat("pt-BR", { timeStyle: "medium" });
@@ -12,8 +13,10 @@ type CheckinRecente = Awaited<ReturnType<typeof getCheckinsRecentes>>[number];
 
 export function CheckinLivePanel({
   initialCheckins,
+  className = "mt-8",
 }: {
   initialCheckins: CheckinRecente[];
+  className?: string;
 }) {
   const { data } = useQuery({
     queryKey: ["checkins-recentes"],
@@ -26,7 +29,7 @@ export function CheckinLivePanel({
     data && data.success ? data.checkins : initialCheckins;
 
   return (
-    <div className="mt-8 rounded-lg border border-border">
+    <div className={cn("rounded-lg border border-border", className)}>
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />

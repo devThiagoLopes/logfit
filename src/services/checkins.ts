@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import { aluno } from "@/lib/db/aluno-schema";
@@ -129,7 +129,9 @@ export async function getCheckins(filtro?: {
     .orderBy(desc(checkin.ocorridoEm));
 }
 
-export async function getCheckinsRecentes(limite = 10) {
+export async function getCheckinsRecentes(limite = 10, janelaMinutos = 10) {
+  const desde = new Date(Date.now() - janelaMinutos * 60 * 1000);
+
   return getDb()
     .select({
       id: checkin.id,
@@ -144,6 +146,117 @@ export async function getCheckinsRecentes(limite = 10) {
     .from(checkin)
     .leftJoin(aluno, eq(checkin.alunoId, aluno.id))
     .innerJoin(dispositivo, eq(checkin.dispositivoId, dispositivo.id))
+    .where(gte(checkin.ocorridoEm, desde))
     .orderBy(desc(checkin.ocorridoEm))
     .limit(limite);
+}
+
+// ===== Agregações para o dashboard =====
+
+function intervaloDeHoje() {
+  const inicio = new Date();
+  inicio.setHours(0, 0, 0, 0);
+  const fim = new Date();
+  fim.setHours(23, 59, 59, 999);
+  return { inicio, fim };
+}
+
+// "Pessoas na academia" é estimado: só os check-ins em que o dispositivo
+// informou o sentido entram na conta de entradas/saídas (campo opcional,
+// ver checkin-schema.ts). Passagens conta qualquer acesso liberado hoje,
+// com ou sem sentido informado.
+export async function getResumoCheckinHoje() {
+  const { inicio, fim } = intervaloDeHoje();
+
+  const linhas = await getDb()
+    .select({
+      liberado: checkin.liberado,
+      sentido: checkin.sentido,
+      alunoId: checkin.alunoId,
+      identificadorValor: checkin.identificadorValor,
+    })
+    .from(checkin)
+    .where(and(gte(checkin.ocorridoEm, inicio), lte(checkin.ocorridoEm, fim)))
+    .orderBy(asc(checkin.ocorridoEm));
+
+  let passagens = 0;
+  let negados = 0;
+
+  // Mesmo cpf/matrícula pode liberar várias vezes seguidas (reentrada,
+  // leitura duplicada da catraca etc.) — isso não é gente nova entrando, é a
+  // mesma pessoa. Por isso contamos presença pelo ÚLTIMO sentido de cada
+  // pessoa no dia, não pela soma bruta de entradas/saídas.
+  const ultimoSentidoPorPessoa = new Map<string, "entrada" | "saida">();
+
+  for (const linha of linhas) {
+    if (!linha.liberado) {
+      negados += 1;
+      continue;
+    }
+    passagens += 1;
+    if (linha.sentido) {
+      const pessoa = linha.alunoId ?? linha.identificadorValor;
+      ultimoSentidoPorPessoa.set(pessoa, linha.sentido);
+    }
+  }
+
+  const pessoasNaAcademia = [...ultimoSentidoPorPessoa.values()].filter(
+    (sentido) => sentido === "entrada",
+  ).length;
+
+  return {
+    passagensHoje: passagens,
+    negadosHoje: negados,
+    pessoasNaAcademia,
+  };
+}
+
+export async function getMovimentoPorHora() {
+  const { inicio, fim } = intervaloDeHoje();
+
+  const linhas = await getDb()
+    .select({ ocorridoEm: checkin.ocorridoEm })
+    .from(checkin)
+    .where(
+      and(
+        eq(checkin.liberado, true),
+        gte(checkin.ocorridoEm, inicio),
+        lte(checkin.ocorridoEm, fim),
+      ),
+    );
+
+  const contagemPorHora = new Array(24).fill(0) as number[];
+  for (const linha of linhas) {
+    contagemPorHora[new Date(linha.ocorridoEm).getHours()] += 1;
+  }
+
+  return contagemPorHora.map((total, hora) => ({
+    hora: `${String(hora).padStart(2, "0")}h`,
+    total,
+  }));
+}
+
+const DIAS_SEMANA_LABEL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+// Começa na segunda, igual ao calendário comercial.
+const ORDEM_DIAS_SEMANA = [1, 2, 3, 4, 5, 6, 0];
+
+export async function getMovimentoPorDiaSemana(dias = 30) {
+  const desde = new Date();
+  desde.setDate(desde.getDate() - dias);
+  desde.setHours(0, 0, 0, 0);
+
+  const linhas = await getDb()
+    .select({ ocorridoEm: checkin.ocorridoEm })
+    .from(checkin)
+    .where(and(eq(checkin.liberado, true), gte(checkin.ocorridoEm, desde)));
+
+  const contagemPorDia = new Array(7).fill(0) as number[];
+  for (const linha of linhas) {
+    contagemPorDia[new Date(linha.ocorridoEm).getDay()] += 1;
+  }
+
+  return ORDEM_DIAS_SEMANA.map((indiceDia) => ({
+    dia: DIAS_SEMANA_LABEL[indiceDia],
+    total: contagemPorDia[indiceDia],
+  }));
 }

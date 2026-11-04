@@ -167,6 +167,24 @@ export async function temPagamentoAtrasado(alunoId: string) {
   return Boolean(row);
 }
 
+// Lista (não apenas booleano, ao contrário de temPagamentoAtrasado) usada
+// pelo painel de pendências do dashboard.
+export async function getPagamentosAtrasados() {
+  return getDb()
+    .select({
+      id: pagamento.id,
+      valor: pagamento.valor,
+      vencimento: pagamento.vencimento,
+      matriculaId: pagamento.matriculaId,
+      alunoNome: aluno.nome,
+    })
+    .from(pagamento)
+    .innerJoin(matricula, eq(pagamento.matriculaId, matricula.id))
+    .innerJoin(aluno, eq(matricula.alunoId, aluno.id))
+    .where(and(eq(pagamento.status, "pendente"), lt(pagamento.vencimento, new Date())))
+    .orderBy(asc(pagamento.vencimento));
+}
+
 // ===== Mutações =====
 
 export async function concluirPagamento(

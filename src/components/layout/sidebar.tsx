@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  ChevronDown,
   ClipboardList,
+  FolderCog,
   LayoutDashboard,
   LogOut,
   Radio,
@@ -25,14 +28,19 @@ const navGroups = [
     { href: "/pagamentos", label: "Pagamentos", icon: Receipt },
     { href: "/checkin", label: "Check-in", icon: ScanLine },
   ],
-  [
+];
+
+const cadastrosGeraisNav = {
+  label: "Cadastros gerais",
+  icon: FolderCog,
+  items: [
     { href: "/usuarios", label: "Usuários", icon: UserCog },
     { href: "/planos", label: "Planos", icon: Wallet },
     { href: "/sensores", label: "Sensores", icon: Radio },
   ],
-];
+};
 
-const navItems = navGroups.flat();
+const navItems = [...navGroups.flat(), ...cadastrosGeraisNav.items];
 
 function navLinkClass(isActive: boolean) {
   return cn(
@@ -49,6 +57,11 @@ export function Sidebar() {
     .find(
       (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
     )?.href;
+
+  const isCadastrosAtivo = cadastrosGeraisNav.items.some(
+    (item) => item.href === activeHref,
+  );
+  const [isCadastrosOpen, setIsCadastrosOpen] = useState(isCadastrosAtivo);
 
   async function handleSignOut() {
     await authClient.signOut();
@@ -80,6 +93,46 @@ export function Sidebar() {
             })}
           </div>
         ))}
+
+        <div className="my-2 border-t border-white/10" />
+
+        <div className="flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={() => setIsCadastrosOpen((open) => !open)}
+            aria-expanded={isCadastrosOpen}
+            className={navLinkClass(isCadastrosAtivo && !isCadastrosOpen)}
+          >
+            <cadastrosGeraisNav.icon className="h-4 w-4" />
+            <span className="flex-1 text-left">{cadastrosGeraisNav.label}</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 shrink-0 transition-transform",
+                isCadastrosOpen && "rotate-180",
+              )}
+            />
+          </button>
+
+          {isCadastrosOpen && (
+            <div className="flex flex-col gap-1 pl-4">
+              {cadastrosGeraisNav.items.map((item) => {
+                const isActive = activeHref === item.href;
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={navLinkClass(isActive)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
 
       <div className="px-3">

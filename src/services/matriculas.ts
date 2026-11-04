@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, isNull, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, lt, or } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import { aluno } from "@/lib/db/aluno-schema";
@@ -328,6 +328,51 @@ export async function temMatriculaAtiva(alunoId: string) {
     .limit(1);
 
   return Boolean(row);
+}
+
+// Usadas pelo painel de pendências do dashboard.
+
+export async function getMatriculasAguardandoAssinatura() {
+  return getDb()
+    .select({
+      id: matricula.id,
+      alunoNome: aluno.nome,
+      planoNome: plano.nome,
+      createdAt: matricula.createdAt,
+    })
+    .from(matricula)
+    .innerJoin(aluno, eq(matricula.alunoId, aluno.id))
+    .innerJoin(plano, eq(matricula.planoId, plano.id))
+    .where(eq(matricula.status, "aguardando_assinatura"))
+    .orderBy(desc(matricula.createdAt));
+}
+
+// Primeira parcela pendente mas ainda não vencida: já bloqueia o acesso na
+// catraca (temPrimeiraParcelaPendente), mas não entra em
+// getPagamentosAtrasados por não estar vencida ainda.
+export async function getMatriculasPendentesPrimeiraParcela() {
+  return getDb()
+    .select({
+      id: matricula.id,
+      alunoNome: aluno.nome,
+      planoNome: plano.nome,
+      vencimento: pagamento.vencimento,
+    })
+    .from(matricula)
+    .innerJoin(aluno, eq(matricula.alunoId, aluno.id))
+    .innerJoin(plano, eq(matricula.planoId, plano.id))
+    .innerJoin(
+      pagamento,
+      and(eq(pagamento.matriculaId, matricula.id), eq(pagamento.numeroParcela, 1)),
+    )
+    .where(
+      and(
+        eq(matricula.status, "assinada"),
+        eq(pagamento.status, "pendente"),
+        gte(pagamento.vencimento, new Date()),
+      ),
+    )
+    .orderBy(asc(pagamento.vencimento));
 }
 
 // ===== Timeline / histórico =====

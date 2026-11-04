@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Radio } from "lucide-react";
+import { Radio, ScanLine, Vibrate } from "lucide-react";
 
 import { auth } from "@/lib/auth/auth";
 import { hasRole } from "@/lib/permissions";
@@ -52,7 +52,9 @@ export default async function ConfiguracoesSensoresPage() {
             <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Nome</th>
+                <th className="px-4 py-3 font-medium">Tipo</th>
                 <th className="px-4 py-3 font-medium">Local</th>
+                <th className="px-4 py-3 font-medium">Lotação</th>
                 <th className="px-4 py-3 font-medium">Token</th>
                 <th className="px-4 py-3 font-medium">Ativo</th>
                 <th className="px-4 py-3 font-medium text-right">Ações</th>
@@ -65,7 +67,22 @@ export default async function ConfiguracoesSensoresPage() {
                     {dispositivo.nome}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5">
+                      {dispositivo.tipo === "catraca" ? (
+                        <ScanLine className="h-3.5 w-3.5" />
+                      ) : (
+                        <Vibrate className="h-3.5 w-3.5" />
+                      )}
+                      {dispositivo.tipo === "catraca" ? "Catraca" : "Vibração"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
                     {dispositivo.local ?? "-"}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {dispositivo.tipo === "catraca"
+                      ? (dispositivo.lotacaoMaxima ?? "-")
+                      : "-"}
                   </td>
                   <td className="px-4 py-3">
                     <DispositivoTokenCell
