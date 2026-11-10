@@ -13,7 +13,7 @@ env:
   NODE_ENV: test
 
 jobs:
-  test:
+  Pipeline-tests:
     runs-on: ubuntu-latest
 
     services:
