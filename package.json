@@ -11,7 +11,12 @@
     "db:migrate": "dotenv -e .env.local -- drizzle-kit migrate",
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
-    "db:seed-admin": "dotenv -e .env.local -- tsx scripts/seed-admin.ts"
+    "db:seed-admin": "dotenv -e .env.local -- tsx scripts/seed-admin.ts",
+    "test": "dotenv -e .env.test -- vitest run",
+    "test:watch": "dotenv -e .env.test -- vitest",
+    "test:db:up": "docker compose -f docker-compose.test.yml up -d --wait",
+    "test:db:down": "docker compose -f docker-compose.test.yml down -v",
+    "test:db:migrate": "dotenv -e .env.test -- drizzle-kit migrate"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -42,8 +47,10 @@
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "postgres": "^4.1.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }
