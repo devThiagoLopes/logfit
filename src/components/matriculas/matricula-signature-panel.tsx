@@ -15,10 +15,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { getMatriculaStatusAction } from "@/app/(dashboard)/matriculas/actions";
-import {
-  getSituacaoMatricula,
-  type getMatriculaById,
-} from "@/services/matriculas";
+import { getSituacaoMatricula } from "@/lib/matricula-situacao";
+import type { getMatriculaById } from "@/services/matriculas";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",

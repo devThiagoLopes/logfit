@@ -24,14 +24,19 @@ import {
 
 // ===== Constantes =====
 
-export const MATRICULA_SITUACOES = [
-  "aguardando_assinatura",
-  "ativa",
-  "expirada",
-  "cancelada",
-] as const;
-
-export type MatriculaSituacao = (typeof MATRICULA_SITUACOES)[number];
+export {
+  MATRICULA_SITUACOES,
+  getSituacaoMatricula,
+  PRAZO_REABERTURA_DIAS,
+  podeReabrirMatricula,
+  type MatriculaSituacao,
+} from "@/lib/matricula-situacao";
+import {
+  MATRICULA_SITUACOES,
+  PRAZO_REABERTURA_DIAS,
+  getSituacaoMatricula,
+  type MatriculaSituacao,
+} from "@/lib/matricula-situacao";
 
 // Situação exibida nas telas: igual à situação de negócio, exceto que
 // "ativa" com a primeira parcela ainda pendente aparece como "pendente" —
@@ -47,8 +52,6 @@ export function getSituacaoExibicao(
     ? "pendente"
     : situacao;
 }
-
-export const PRAZO_REABERTURA_DIAS = 10;
 
 // ===== Erros de domínio =====
 
@@ -287,21 +290,6 @@ export async function getMatriculaStatus(id: string) {
     .limit(1);
 
   return row;
-}
-
-// Situação é calculada, não armazenada: o `status` da matrícula só
-// controla o fluxo de assinatura/cancelamento; a expiração depende apenas de
-// `dataExpiracao` ter passado ou não em relação a agora.
-export function getSituacaoMatricula(
-  status: string,
-  dataExpiracao: Date | string | null,
-): MatriculaSituacao {
-  if (status === "cancelada") return "cancelada";
-  if (status !== "assinada") return "aguardando_assinatura";
-  if (dataExpiracao && new Date(dataExpiracao).getTime() < Date.now()) {
-    return "expirada";
-  }
-  return "ativa";
 }
 
 // Regra de negócio: um aluno só pode ter uma matrícula por vez (de
@@ -608,17 +596,6 @@ export async function cancelarMatricula(id: string) {
 
 // Usado pela UI para decidir se mostra a opção de reabrir, sem duplicar
 // a regra do prazo que é validada de novo (e com mais força) no server.
-export function podeReabrirMatricula(
-  status: string,
-  canceladaEm: Date | string | null,
-) {
-  if (status !== "cancelada" || !canceladaEm) return false;
-
-  const limite = new Date(canceladaEm);
-  limite.setDate(limite.getDate() + PRAZO_REABERTURA_DIAS);
-  return Date.now() <= limite.getTime();
-}
-
 // Dentro do prazo, cancelar é reversível: reabrir devolve a matrícula
 // exatamente ao status anterior ao cancelamento (assinada ou aguardando
 // assinatura), sem alterar datas, assinatura ou pagamentos já gerados.
