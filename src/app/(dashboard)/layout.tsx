@@ -23,7 +23,9 @@ export default async function DashboardLayout({
         <Header userName={session.user.name || session.user.email} />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar />
-          <main className="flex-1 overflow-y-auto">{children}</main>
+          <main className="flex-1 overflow-y-auto [transform:translateZ(0)]">
+            {children}
+          </main>
         </div>
       </div>
     </QueryProvider>

@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -29,25 +28,17 @@ export function DashboardPeriodoFilter() {
   }
 
   return (
-    <div className="space-y-1.5">
-      <Label
-        htmlFor="periodo"
-        className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-      >
-        Período dos gráficos
-      </Label>
-      <Select value={periodo} onValueChange={selecionar}>
-        <SelectTrigger id="periodo" className="w-40">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {DASHBOARD_PERIODOS.map((opcao) => (
-            <SelectItem key={opcao.key} value={opcao.key}>
-              {opcao.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select value={periodo} onValueChange={selecionar}>
+      <SelectTrigger id="periodo" className="w-28" size="sm">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent align="end">
+        {DASHBOARD_PERIODOS.map((opcao) => (
+          <SelectItem key={opcao.key} value={opcao.key}>
+            {opcao.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

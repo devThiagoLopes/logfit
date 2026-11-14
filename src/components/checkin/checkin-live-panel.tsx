@@ -29,8 +29,8 @@ export function CheckinLivePanel({
     data && data.success ? data.checkins : initialCheckins;
 
   return (
-    <div className={cn("rounded-lg border border-border", className)}>
-      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+    <div className={cn("flex flex-col rounded-lg border border-border", className)}>
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -38,36 +38,38 @@ export function CheckinLivePanel({
         <p className="text-sm font-medium text-foreground">Ao vivo</p>
       </div>
 
-      {checkins.length === 0 ? (
-        <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-          Nenhum acesso registrado ainda.
-        </p>
-      ) : (
-        <ul className="divide-y divide-border">
-          {checkins.map((item) => (
-            <li
-              key={item.id}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm"
-            >
-              {item.liberado ? (
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-              ) : (
-                <XCircle className="h-4 w-4 shrink-0 text-red-600" />
-              )}
-              <span className="text-muted-foreground">
-                {timeFormatter.format(new Date(item.ocorridoEm))}
-              </span>
-              <span className="font-medium text-foreground">
-                {item.alunoNome ?? `Não identificado — ${item.identificadorValor}`}
-              </span>
-              <span className="ml-auto text-xs text-muted-foreground">
-                {item.dispositivoNome}
-                {item.motivo ? ` · ${item.motivo}` : ""}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {checkins.length === 0 ? (
+          <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+            Nenhum acesso registrado ainda.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {checkins.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm"
+              >
+                {item.liberado ? (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                ) : (
+                  <XCircle className="h-4 w-4 shrink-0 text-red-600" />
+                )}
+                <span className="text-muted-foreground">
+                  {timeFormatter.format(new Date(item.ocorridoEm))}
+                </span>
+                <span className="font-medium text-foreground">
+                  {item.alunoNome ?? `Não identificado — ${item.identificadorValor}`}
+                </span>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {item.dispositivoNome}
+                  {item.motivo ? ` · ${item.motivo}` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

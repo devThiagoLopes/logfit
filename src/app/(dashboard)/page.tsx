@@ -2,14 +2,19 @@ import { headers } from "next/headers";
 import { AlertTriangle, Gauge, ScanLine, Users } from "lucide-react";
 
 import { CheckinLivePanel } from "@/components/checkin/checkin-live-panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { DashboardPeriodoFilter } from "@/components/dashboard/periodo-filter";
 import { MovimentoPorHoraChart } from "@/components/dashboard/movimento-por-hora-chart";
 import { MovimentoSemanaChart } from "@/components/dashboard/movimento-semana-chart";
 import { PendenciasPanel } from "@/components/dashboard/pendencias-panel";
 import { StatCard } from "@/components/dashboard/stat-card";
 import {
-  DASHBOARD_PERIODO_DESCRICAO,
   diasDoPeriodo,
   parseDashboardPeriodo,
 } from "@/constants/dashboard-periodo";
@@ -61,53 +66,8 @@ export default async function DashboardPage({
         Acompanhe a situação atual da academia e as pendências em aberto.
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Users}
-          label="Pessoas na academia"
-          value={resumoCheckin.pessoasNaAcademia}
-          caption="Estimado pelas entradas/saídas de hoje"
-        />
-        <StatCard
-          icon={ScanLine}
-          label="Entradas hoje"
-          value={resumoCheckin.passagensHoje}
-          caption="Passagens liberadas pela catraca"
-        />
-        <StatCard
-          icon={Gauge}
-          label="Ocupação atual"
-          value={ocupacao.percentual !== null ? `${ocupacao.percentual}%` : "—"}
-          caption={
-            ocupacao.percentual !== null
-              ? `${ocupacao.pessoasNaAcademia} de ${ocupacao.lotacaoMaxima} lugares`
-              : "Nenhuma catraca com lotação cadastrada"
-          }
-          progress={
-            ocupacao.percentual !== null
-              ? {
-                  percent: ocupacao.percentual,
-                  colorClassName: ocupacaoColorClass(ocupacao.percentual),
-                }
-              : undefined
-          }
-        />
-        <StatCard
-          icon={AlertTriangle}
-          label="Pendências"
-          value={pendencias.length}
-          caption="Pagamentos, matrículas e cadastros a resolver"
-        />
-      </div>
-
-      <Card className="mt-6">
-        <CardContent className="flex flex-wrap items-end gap-4">
-          <DashboardPeriodoFilter />
-        </CardContent>
-      </Card>
-
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-foreground">
               Movimento por horário (hoje)
@@ -118,31 +78,71 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
+        <div className="grid grid-cols-2 gap-4">
+          <StatCard
+            icon={Users}
+            label="Pessoas na academia"
+            value={resumoCheckin.pessoasNaAcademia}
+            caption="Estimado pelas entradas/saídas de hoje"
+          />
+          <StatCard
+            icon={ScanLine}
+            label="Entradas hoje"
+            value={resumoCheckin.passagensHoje}
+            caption="Passagens liberadas pela catraca"
+          />
+          <StatCard
+            icon={Gauge}
+            label="Ocupação atual"
+            value={ocupacao.percentual !== null ? `${ocupacao.percentual}%` : "—"}
+            caption={
+              ocupacao.percentual !== null
+                ? `${ocupacao.pessoasNaAcademia} de ${ocupacao.lotacaoMaxima} lugares`
+                : "Nenhuma catraca com lotação cadastrada"
+            }
+            progress={
+              ocupacao.percentual !== null
+                ? {
+                    percent: ocupacao.percentual,
+                    colorClassName: ocupacaoColorClass(ocupacao.percentual),
+                  }
+                : undefined
+            }
+          />
+          <StatCard
+            icon={AlertTriangle}
+            label="Pendências"
+            value={pendencias.length}
+            caption="Pagamentos, matrículas e cadastros a resolver"
+          />
+        </div>
+
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-medium text-foreground">
-                Movimento por dia da semana
-              </CardTitle>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Entradas registradas {DASHBOARD_PERIODO_DESCRICAO[periodo]}
-              </p>
-            </div>
-            {diaDePico && diaDePico.total > 0 && (
-              <span className="text-xs text-muted-foreground">
-                Pico: {diaDePico.dia}
-              </span>
-            )}
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-foreground">
+              Movimento por dia da semana
+            </CardTitle>
+            <CardAction className="flex items-center gap-3">
+              {diaDePico && diaDePico.total > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  Pico: {diaDePico.dia}
+                </span>
+              )}
+              <DashboardPeriodoFilter />
+            </CardAction>
           </CardHeader>
           <CardContent>
             <MovimentoSemanaChart data={movimentoPorDiaSemana} />
           </CardContent>
         </Card>
-      </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <PendenciasPanel pendencias={pendencias} />
-        <CheckinLivePanel initialCheckins={checkinsRecentes} className="" />
+        <div className="flex min-h-0 flex-col gap-4">
+          <PendenciasPanel pendencias={pendencias} />
+          <CheckinLivePanel
+            initialCheckins={checkinsRecentes}
+            className="min-h-0 flex-1"
+          />
+        </div>
       </div>
     </div>
   );
