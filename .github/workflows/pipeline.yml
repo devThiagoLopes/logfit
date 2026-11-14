@@ -73,3 +73,29 @@ jobs:
 
       - name: Avaliar gate de qualidade (mínimo 90% dos testes passando)
         run: node scripts/check-test-threshold.mjs vitest-results.json 0.9
+
+  deploy:
+    name: Deploy
+    needs: [qualidade, banco-de-dados]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar Vercel CLI
+        run: npm install -g vercel
+
+      - name: Baixar configuração do projeto Vercel
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build na Vercel
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy em produção
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
