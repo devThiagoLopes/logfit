@@ -5,11 +5,18 @@ import { aluno } from "@/lib/db/aluno-schema";
 import { matricula } from "@/lib/db/matricula-schema";
 import { pagamento } from "@/lib/db/pagamento-schema";
 import { plano } from "@/lib/db/plano-schema";
+import { estaVencido, inicioDoDia } from "@/lib/pagamento-situacao";
 import {
   concluirPagamentoSchema,
   type ConcluirPagamentoInput,
 } from "@/lib/validations/pagamento";
 import { addMeses, renovarMatriculasAutomaticas } from "@/services/matriculas";
+
+export {
+  PAGAMENTO_SITUACOES,
+  getSituacaoPagamento,
+  type PagamentoSituacao,
+} from "@/lib/pagamento-situacao";
 
 export class ParcelaAnteriorPendenteError extends Error {
   constructor() {
@@ -32,7 +39,6 @@ async function gerarProximasCompetencias(matriculaRow: {
   dataExpiracao: Date | null;
 }) {
   const db = getDb();
-  const agora = new Date();
 
   for (;;) {
     const [ultima] = await db
@@ -49,9 +55,8 @@ async function gerarProximasCompetencias(matriculaRow: {
 
     if (!ultima) return;
 
-    const vencida = new Date(ultima.vencimento).getTime() < agora.getTime();
     const paga = ultima.status === "pago";
-    if (!paga && !vencida) return;
+    if (!paga && !estaVencido(ultima.vencimento)) return;
 
     const proximoNumero = ultima.numeroParcela + 1;
     const proximoVencimento = addMeses(
@@ -159,7 +164,7 @@ export async function temPagamentoAtrasado(alunoId: string) {
       and(
         eq(matricula.alunoId, alunoId),
         eq(pagamento.status, "pendente"),
-        lt(pagamento.vencimento, new Date()),
+        lt(pagamento.vencimento, inicioDoDia()),
       ),
     )
     .limit(1);
@@ -181,7 +186,7 @@ export async function getPagamentosAtrasados() {
     .from(pagamento)
     .innerJoin(matricula, eq(pagamento.matriculaId, matricula.id))
     .innerJoin(aluno, eq(matricula.alunoId, aluno.id))
-    .where(and(eq(pagamento.status, "pendente"), lt(pagamento.vencimento, new Date())))
+    .where(and(eq(pagamento.status, "pendente"), lt(pagamento.vencimento, inicioDoDia())))
     .orderBy(asc(pagamento.vencimento));
 }
 

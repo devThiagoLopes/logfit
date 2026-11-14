@@ -6,7 +6,11 @@ import { PeriodoFilter } from "@/components/pagamentos/periodo-filter";
 import { FORMAS_PAGAMENTO_OPCOES } from "@/constants/forma-pagamento";
 import { PERIODICIDADES } from "@/constants/periodicidade";
 import { resolverFiltroPagamentos } from "@/lib/pagamentos/periodo";
-import { getPagamentos } from "@/services/pagamentos";
+import {
+  getPagamentos,
+  getSituacaoPagamento,
+  type PagamentoSituacao,
+} from "@/services/pagamentos";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
@@ -22,13 +26,15 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-const STATUS_LABEL: Record<string, string> = {
+const STATUS_LABEL: Record<PagamentoSituacao, string> = {
   pendente: "Pendente",
+  atrasado: "Atrasado",
   pago: "Pago",
 };
 
-const STATUS_CLASS: Record<string, string> = {
+const STATUS_CLASS: Record<PagamentoSituacao, string> = {
   pendente: "bg-amber-100 text-amber-800",
+  atrasado: "bg-red-100 text-red-800",
   pago: "bg-emerald-100 text-emerald-800",
 };
 
@@ -86,59 +92,65 @@ export default async function PagamentosPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {pagamentos.map((item) => (
-                <PagamentoTableRow key={item.id} matriculaId={item.matriculaId}>
-                  <td className="px-4 py-3 font-medium text-foreground">
-                    {item.alunoNome}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {item.planoNome}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {
-                      PERIODICIDADES.find(
-                        ({ key }) => key === item.periodicidade,
-                      )?.label
-                    }
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {item.numeroParcela}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {vencimentoFormatter.format(item.vencimento)}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {currencyFormatter.format(Number(item.valor))}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {item.status === "pago" && item.formaPagamento
-                      ? FORMAS_PAGAMENTO_OPCOES.find(
-                          ({ key }) => key === item.formaPagamento,
+              {pagamentos.map((item) => {
+                const situacao = getSituacaoPagamento(
+                  item.status,
+                  item.vencimento,
+                );
+                return (
+                  <PagamentoTableRow key={item.id} matriculaId={item.matriculaId}>
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      {item.alunoNome}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {item.planoNome}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {
+                        PERIODICIDADES.find(
+                          ({ key }) => key === item.periodicidade,
                         )?.label
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {item.status === "pago" && item.pagoEm
-                      ? dateFormatter.format(item.pagoEm)
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <PagamentoAcaoCell
-                      pagamentoId={item.id}
-                      alunoNome={item.alunoNome}
-                      valor={item.valor}
-                      pendente={item.status === "pendente"}
-                    />
-                  </td>
-                </PagamentoTableRow>
-              ))}
+                      }
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {item.numeroParcela}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {vencimentoFormatter.format(item.vencimento)}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {currencyFormatter.format(Number(item.valor))}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {item.status === "pago" && item.formaPagamento
+                        ? FORMAS_PAGAMENTO_OPCOES.find(
+                            ({ key }) => key === item.formaPagamento,
+                          )?.label
+                        : "-"}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {item.status === "pago" && item.pagoEm
+                        ? dateFormatter.format(item.pagoEm)
+                        : "-"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_CLASS[situacao]}`}
+                      >
+                        {STATUS_LABEL[situacao]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <PagamentoAcaoCell
+                        pagamentoId={item.id}
+                        alunoNome={item.alunoNome}
+                        valor={item.valor}
+                        pendente={item.status === "pendente"}
+                      />
+                    </td>
+                  </PagamentoTableRow>
+                );
+              })}
             </tbody>
           </table>
         </div>

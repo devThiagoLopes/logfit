@@ -1,10 +1,37 @@
-import { CheckCircle2, Lock, Wallet } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Lock, Wallet } from "lucide-react";
 
 import { ConcluirPagamentoDialog } from "@/components/pagamentos/concluir-pagamento-dialog";
 import { FORMAS_PAGAMENTO_OPCOES } from "@/constants/forma-pagamento";
 import type { PeriodicidadeKey } from "@/constants/periodicidade";
 import type { MATRICULA_STATUSES } from "@/lib/db/matricula-schema";
-import type { getPagamentosByMatricula } from "@/services/pagamentos";
+import {
+  getSituacaoPagamento,
+  type getPagamentosByMatricula,
+} from "@/services/pagamentos";
+
+const ESTILO_SITUACAO = {
+  pago: {
+    wrapper: "border-emerald-200 bg-emerald-50",
+    icon: "text-emerald-600",
+    title: "text-emerald-900",
+    text: "text-emerald-800",
+    subtext: "text-emerald-700",
+  },
+  atrasado: {
+    wrapper: "border-red-200 bg-red-50",
+    icon: "text-red-600",
+    title: "text-red-900",
+    text: "text-red-800",
+    subtext: "text-red-700",
+  },
+  pendente: {
+    wrapper: "border-amber-200 bg-amber-50",
+    icon: "text-amber-600",
+    title: "text-amber-900",
+    text: "text-amber-800",
+    subtext: "text-amber-700",
+  },
+} as const;
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
@@ -69,7 +96,10 @@ export function MatriculaPagamentoPanel({
     .sort((a, b) => b.numeroParcela - a.numeroParcela)[0];
 
   const pagamento = proximoPendente ?? ultimoPago ?? pendentesOrdenados[0];
-  const pago = pagamento.status === "pago";
+  const situacao = getSituacaoPagamento(pagamento.status, pagamento.vencimento);
+  const pago = situacao === "pago";
+  const atrasado = situacao === "atrasado";
+  const cor = ESTILO_SITUACAO[situacao];
   const numeroParcela = pagamento.numeroParcela;
   const parcelasPagas = pagamentos.filter((item) => item.status === "pago").length;
   const parcelado =
@@ -79,32 +109,32 @@ export function MatriculaPagamentoPanel({
 
   return (
     <div
-      className={`flex flex-col items-center gap-3 rounded-xl border p-4 text-center ${
-        pago ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
-      }`}
+      className={`flex flex-col items-center gap-3 rounded-xl border p-4 text-center ${cor.wrapper}`}
     >
       {pago ? (
-        <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+        <CheckCircle2 className={`h-10 w-10 ${cor.icon}`} />
+      ) : atrasado ? (
+        <AlertTriangle className={`h-10 w-10 ${cor.icon}`} />
       ) : (
-        <Wallet className="h-10 w-10 text-amber-600" />
+        <Wallet className={`h-10 w-10 ${cor.icon}`} />
       )}
-      <p
-        className={`text-base font-semibold ${
-          pago ? "text-emerald-900" : "text-amber-900"
-        }`}
-      >
-        {pago ? "Pagamento confirmado" : "Pagamento pendente"}
+      <p className={`text-base font-semibold ${cor.title}`}>
+        {pago
+          ? "Pagamento confirmado"
+          : atrasado
+            ? "Pagamento atrasado"
+            : "Pagamento pendente"}
       </p>
       {parcelado && (
-        <p className={`text-xs ${pago ? "text-emerald-700" : "text-amber-700"}`}>
+        <p className={`text-xs ${cor.subtext}`}>
           Parcela {numeroParcela} de {pagamentos.length} · {parcelasPagas} paga
           {parcelasPagas === 1 ? "" : "s"}
         </p>
       )}
-      <p className={`text-sm ${pago ? "text-emerald-800" : "text-amber-800"}`}>
+      <p className={`text-sm ${cor.text}`}>
         {currencyFormatter.format(Number(pagamento.valor))}
       </p>
-      <p className={`text-xs ${pago ? "text-emerald-700" : "text-amber-700"}`}>
+      <p className={`text-xs ${cor.subtext}`}>
         Vencimento: {vencimentoFormatter.format(new Date(pagamento.vencimento))}
       </p>
 
