@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { Ban, CheckCircle2 } from "lucide-react";
 
 import { AssinaturaForm } from "@/components/matriculas/assinatura-form";
@@ -232,11 +233,15 @@ export default async function AssinarPage({
                 : ""}
             </p>
             {matricula.assinaturaImagem && (
-              <img
-                src={matricula.assinaturaImagem}
-                alt={`Assinatura de ${matricula.assinaturaNome}`}
-                className="h-24 rounded-md border border-emerald-200 bg-white p-2"
-              />
+              <div className="relative h-24 w-48 rounded-md border border-emerald-200 bg-white p-2">
+                <Image
+                  src={matricula.assinaturaImagem}
+                  alt={`Assinatura de ${matricula.assinaturaNome}`}
+                  fill
+                  unoptimized
+                  className="object-contain"
+                />
+              </div>
             )}
           </div>
         ) : matricula.status === "cancelada" ? (

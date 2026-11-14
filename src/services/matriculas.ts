@@ -32,7 +32,6 @@ export {
   type MatriculaSituacao,
 } from "@/lib/matricula-situacao";
 import {
-  MATRICULA_SITUACOES,
   PRAZO_REABERTURA_DIAS,
   getSituacaoMatricula,
   type MatriculaSituacao,

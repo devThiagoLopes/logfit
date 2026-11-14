@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -113,11 +114,15 @@ export function MatriculaSignaturePanel({
             : ""}
         </p>
         {assinaturaImagem && (
-          <img
-            src={assinaturaImagem}
-            alt={`Assinatura de ${assinaturaNome}`}
-            className="h-20 rounded-md border border-border bg-white p-2"
-          />
+          <div className="relative h-20 w-40 rounded-md border border-border bg-white p-2">
+            <Image
+              src={assinaturaImagem}
+              alt={`Assinatura de ${assinaturaNome}`}
+              fill
+              unoptimized
+              className="object-contain"
+            />
+          </div>
         )}
         {dataExpiracao && (
           <p
