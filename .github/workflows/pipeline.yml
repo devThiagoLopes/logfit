@@ -26,6 +26,41 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Verificação de tipos
+        run: npm run typecheck
+
+  seguranca:
+    name: Segurança
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Auditoria de dependências de produção (bloqueia em alta/crítica)
+        run: npm audit --omit=dev --omit=optional --audit-level=high
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@059202af334b4ba7b5db01b701b8e79f8b3bef8f4 # v5.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Avaliar Quality Gate do SonarCloud
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   banco-de-dados:
     name: Banco de dados
     runs-on: ubuntu-latest
@@ -76,7 +111,7 @@ jobs:
 
   deploy:
     name: Deploy
-    needs: [qualidade, banco-de-dados]
+    needs: [qualidade, banco-de-dados, seguranca]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
 

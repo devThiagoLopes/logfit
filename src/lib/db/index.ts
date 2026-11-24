@@ -6,18 +6,24 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 /**
- * Em `NODE_ENV=test` usamos o driver `postgres-js` (Postgres via TCP) contra
- * o container do `docker-compose.test.yml`, já que o driver `neon-http` só
- * fala com o proxy HTTP da Neon e não funciona com um Postgres comum.
+ * O driver é escolhido pela própria `DATABASE_URL`: contra a Neon (produção
+ * e preview) usamos `neon-http`, que fala o proxy HTTP da Neon. Contra um
+ * Postgres comum (container local de dev ou de teste) usamos `postgres-js`
+ * (TCP puro), já que `neon-http` não funciona fora do proxy da Neon.
  */
 function createDb() {
-  if (process.env.NODE_ENV === "test") {
-    const sql = postgres(process.env.DATABASE_URL_UNPOOLED!);
-    return drizzlePostgresJs(sql, { schema });
+  const databaseUrl =
+    process.env.NODE_ENV === "test"
+      ? process.env.DATABASE_URL_UNPOOLED!
+      : process.env.DATABASE_URL!;
+
+  if (databaseUrl.includes(".neon.tech")) {
+    const sql = neon(databaseUrl);
+    return drizzle(sql, { schema });
   }
 
-  const sql = neon(process.env.DATABASE_URL!);
-  return drizzle(sql, { schema });
+  const sql = postgres(databaseUrl);
+  return drizzlePostgresJs(sql, { schema });
 }
 
 let _db: ReturnType<typeof createDb> | null = null;
