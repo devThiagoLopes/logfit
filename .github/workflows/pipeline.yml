@@ -31,6 +31,7 @@ jobs:
 
   seguranca:
     name: Segurança
+    needs: banco-de-dados
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,11 +45,18 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Instalar dependências
-        run: npm ci
+      - name: Instalar dependências (sem scripts de build, só precisamos do lockfile e do código-fonte)
+        run: npm ci --ignore-scripts
 
       - name: Auditoria de dependências de produção (bloqueia em alta/crítica)
         run: npm audit --omit=dev --omit=optional --audit-level=high
+
+      - name: Baixar relatório de cobertura
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+        continue-on-error: true
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@0303d6b62e310685c0e34d0b9cde218036885c4d # v5.0.0
@@ -102,12 +110,21 @@ jobs:
       - name: Aplicar migrations no banco de teste
         run: npx drizzle-kit migrate
 
-      - name: Rodar testes (relatório JSON)
-        run: npx vitest run --reporter=json --outputFile=vitest-results.json
+      - name: Rodar testes (relatório JSON + cobertura)
+        run: npx vitest run --coverage --reporter=json --outputFile=vitest-results.json
         continue-on-error: true
 
       - name: Avaliar gate de qualidade (mínimo 90% dos testes passando)
         run: node scripts/check-test-threshold.mjs vitest-results.json 0.9
+
+      - name: Publicar relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 1
+          if-no-files-found: ignore
 
   deploy:
     name: Deploy
