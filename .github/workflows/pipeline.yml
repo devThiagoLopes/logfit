@@ -51,12 +51,12 @@ jobs:
         run: npm audit --omit=dev --omit=optional --audit-level=high
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@059202af334b4ba7b5db01b701b8e79f8b3bef8f4 # v5.0.0
+        uses: SonarSource/sonarqube-scan-action@0303d6b62e310685c0e34d0b9cde218036885c4d # v5.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Avaliar Quality Gate do SonarCloud
-        uses: SonarSource/sonarqube-quality-gate-action@v1
+        uses: SonarSource/sonarqube-quality-gate-action@7a5fffe8e523c40e0c740b6bc2712ab503e52efa # v1
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
