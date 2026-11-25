@@ -94,7 +94,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
   const cepField = register("cep");
 
   async function handleCepBlur(event: React.FocusEvent<HTMLInputElement>) {
-    cepField.onBlur(event);
+    await cepField.onBlur(event);
 
     const cep = event.target.value;
     const digits = cep.replace(/\D/g, "");
@@ -207,7 +207,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
                 {...telefoneField}
                 onChange={(event) => {
                   event.target.value = maskTelefone(event.target.value);
-                  telefoneField.onChange(event);
+                  void telefoneField.onChange(event);
                 }}
               />
               {errors.telefone && (
@@ -260,7 +260,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
                 {...cpfField}
                 onChange={(event) => {
                   event.target.value = maskCpf(event.target.value);
-                  cpfField.onChange(event);
+                  void cpfField.onChange(event);
                 }}
               />
               {errors.cpf && (
@@ -292,7 +292,7 @@ export function AlunoForm({ aluno, onCancel, onSaved }: AlunoFormProps) {
                 {...cepField}
                 onChange={(event) => {
                   event.target.value = maskCep(event.target.value);
-                  cepField.onChange(event);
+                  void cepField.onChange(event);
                 }}
                 onBlur={handleCepBlur}
               />

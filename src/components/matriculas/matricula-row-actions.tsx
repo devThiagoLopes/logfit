@@ -25,10 +25,7 @@ export function MatriculaRowActions({
     }
 
     return (
-      <div
-        className="flex items-center justify-end"
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className="flex items-center justify-end" onClick={(event) => event.stopPropagation()}>{/* NOSONAR: wrapper só interrompe o bubbling do clique da linha da tabela; não há role ARIA apropriado para um contêiner que apenas captura eventos dos botões filhos (ver docs do jsx-a11y/no-static-element-interactions). */}
         <MatriculaReabrirDialog
           matriculaId={matriculaId}
           alunoNome={alunoNome}
@@ -47,10 +44,7 @@ export function MatriculaRowActions({
   }
 
   return (
-    <div
-      className="flex items-center justify-end"
-      onClick={(event) => event.stopPropagation()}
-    >
+    <div className="flex items-center justify-end" onClick={(event) => event.stopPropagation()}>{/* NOSONAR: wrapper só interrompe o bubbling do clique da linha da tabela; não há role ARIA apropriado para um contêiner que apenas captura eventos dos botões filhos (ver docs do jsx-a11y/no-static-element-interactions). */}
       <MatriculaCancelarDialog
         matriculaId={matriculaId}
         alunoNome={alunoNome}

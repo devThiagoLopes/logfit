@@ -84,10 +84,15 @@ export async function deleteDispositivo(id: string) {
 // Autentica o dispositivo chamador das rotas de catraca a partir do header
 // Authorization: Bearer <token>. Não tem relação com sessão/RBAC do Better
 // Auth — é um segredo próprio do device, não de um usuário humano.
+const BEARER_PREFIX = "bearer ";
+
 export async function autenticarDispositivo(
   authorizationHeader: string | null,
 ) {
-  const token = authorizationHeader?.match(/^Bearer\s+(.+)$/i)?.[1];
+  const header = authorizationHeader?.trim() ?? "";
+  const token = header.toLowerCase().startsWith(BEARER_PREFIX)
+    ? header.slice(BEARER_PREFIX.length).trim()
+    : "";
   if (!token) return null;
 
   const [row] = await getDb()

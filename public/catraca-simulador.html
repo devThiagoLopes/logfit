@@ -57,6 +57,8 @@
     color: var(--text);
     font-size: 14px;
   }
+  .id-fieldset { border: none; padding: 0; margin: 14px 0 0; }
+  .id-fieldset legend { font-size: 13px; color: var(--muted); margin: 0 0 4px; padding: 0; }
   .radio-row { display: flex; gap: 16px; margin-top: 6px; }
   .radio-row label { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--text); font-size: 13px; }
   .radio-row input { width: auto; }
@@ -177,11 +179,13 @@
       <label for="token">Token do dispositivo</label>
       <input id="token" type="text" placeholder="Copiado em /sensores" />
 
-      <label>Identificador</label>
-      <div class="radio-row">
-        <label><input type="radio" name="tipo" value="matricula" checked /> Matrícula</label>
-        <label><input type="radio" name="tipo" value="cpf" /> CPF</label>
-      </div>
+      <fieldset class="id-fieldset">
+        <legend>Identificador</legend>
+        <div class="radio-row">
+          <label><input type="radio" name="tipo" value="matricula" checked /> Matrícula</label>
+          <label><input type="radio" name="tipo" value="cpf" /> CPF</label>
+        </div>
+      </fieldset>
 
       <label for="valor">Valor</label>
       <input id="valor" type="text" placeholder="Ex: 1" />

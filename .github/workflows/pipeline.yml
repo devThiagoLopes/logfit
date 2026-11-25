@@ -20,8 +20,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Instalar dependências
-        run: npm ci
+      - name: Instalar dependências (sem scripts de instalação de terceiros)
+        run: npm ci --ignore-scripts
 
       - name: Lint
         run: npm run lint
@@ -104,8 +104,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Instalar dependências
-        run: npm ci
+      - name: Instalar dependências (sem scripts de instalação de terceiros)
+        run: npm ci --ignore-scripts
 
       - name: Aplicar migrations no banco de teste
         run: npx drizzle-kit migrate
@@ -140,8 +140,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalar Vercel CLI
-        run: npm install -g vercel
+      - name: Instalar Vercel CLI (versão travada, sem scripts de instalação de terceiros)
+        run: npm install -g --ignore-scripts vercel@67.0.0
 
       - name: Baixar configuração do projeto Vercel
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
