@@ -1,9 +1,12 @@
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { avaliarGate, main, safePath } from "./check-test-threshold.mjs";
+
+const SCRIPT_PATH = join(import.meta.dirname, "check-test-threshold.mjs");
 
 describe("safePath", () => {
   let dir;
@@ -122,3 +125,38 @@ describe("main", () => {
     expect(() => main(["node", "check-test-threshold.mjs", "../../etc/passwd", "0.9"])).toThrow();
   });
 });
+
+describe("execução via CLI (node check-test-threshold.mjs ...)", () => {
+  let dir;
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("sai com código 0 quando o arquivo é chamado diretamente e o gate passa", () => {
+    dir = mkdtempSync(join(process.cwd(), "check-test-threshold-tmp-"));
+    const file = join(dir, "resultados.json");
+    writeFileSync(file, JSON.stringify({ numTotalTests: 10, numPassedTests: 10 }));
+
+    const output = execFileSync(
+      process.execPath,
+      [SCRIPT_PATH, file, "0.9"],
+      { encoding: "utf-8" },
+    );
+
+    expect(output).toContain("Gate de qualidade aprovado.");
+  });
+
+  it("sai com código diferente de 0 quando o arquivo é chamado diretamente e o gate falha", () => {
+    dir = mkdtempSync(join(process.cwd(), "check-test-threshold-tmp-"));
+    const file = join(dir, "resultados.json");
+    writeFileSync(file, JSON.stringify({ numTotalTests: 10, numPassedTests: 1 }));
+
+    expect(() =>
+      execFileSync(process.execPath, [SCRIPT_PATH, file, "0.9"], {
+        encoding: "utf-8",
+      }),
+    ).toThrow();
+  });
+});
+
