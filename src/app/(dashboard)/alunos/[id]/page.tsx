@@ -4,9 +4,12 @@ import { ArrowLeft, ClipboardList, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { AlunoFormDialog } from "@/components/alunos/aluno-form-dialog";
+import { DocumentoAlunoFormDialog } from "@/components/alunos/documento-aluno-form-dialog";
+import { DocumentosAlunoList } from "@/components/alunos/documentos-aluno-list";
 import { PERIODICIDADES } from "@/constants/periodicidade";
 import { ALUNO_GENEROS } from "@/lib/db/aluno-schema";
 import { getAlunoById } from "@/services/alunos";
+import { getDocumentosByAluno } from "@/services/documentos-aluno";
 import {
   getMatriculasByAluno,
   getSituacaoExibicao,
@@ -79,6 +82,7 @@ export default async function AlunoDetalhePage({
   }
 
   const matriculas = await getMatriculasByAluno(id);
+  const documentos = await getDocumentosByAluno(id);
 
   return (
     <div className="px-8 py-10">
@@ -150,6 +154,16 @@ export default async function AlunoDetalhePage({
           <p className="text-sm text-foreground">
             {aluno.observacoes || "—"}
           </p>
+        </section>
+
+        <section className="space-y-3 border-t border-border pt-4">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-sm font-medium text-foreground">
+              Documentos
+            </h2>
+            <DocumentoAlunoFormDialog alunoId={id} />
+          </div>
+          <DocumentosAlunoList documentos={documentos} />
         </section>
       </div>
 

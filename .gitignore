@@ -17,6 +17,8 @@ vitest-results.json
 # next.js
 /.next/
 /out/
+# arquivo de instruções pra agentes de IA, regenerado pelo `next dev` a cada start
+/AGENTS.md
 
 # production
 /build

@@ -15,5 +15,7 @@ export * from "./dispositivo-schema";
 
 export * from "./checkin-schema";
 
+export * from "./documento-aluno-schema";
+
 // Demais tabelas serão adicionadas aqui conforme os módulos forem implementados
 // (treinos, aulas, etc.).
