@@ -52,7 +52,7 @@
     "@vitest/coverage-v8": "^3.2.7",
     "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.11",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "16.4.6",
     "jsdom": "^31.0.1",
     "postgres": "^4.1.0",
