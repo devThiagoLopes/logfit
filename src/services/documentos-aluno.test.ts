@@ -22,6 +22,13 @@ import {
   getDocumentosByAluno,
 } from "@/services/documentos-aluno";
 
+function cpfAleatorio() {
+  const n = Math.floor(Math.random() * 1_000_000_000)
+    .toString()
+    .padStart(9, "0");
+  return `${n.slice(0, 3)}.${n.slice(3, 6)}.${n.slice(6, 9)}-00`;
+}
+
 describe("service de documentos do aluno (integração com o banco de teste)", () => {
   const alunosCriados: string[] = [];
   const usuariosCriados: string[] = [];
@@ -49,7 +56,7 @@ describe("service de documentos do aluno (integração com o banco de teste)", (
       rg: undefined,
       observacoes: undefined,
       telefone: "(11) 99999-9999",
-      cpf: `${Math.floor(Math.random() * 900 + 100)}.456.789-09`,
+      cpf: cpfAleatorio(),
       situacao: "ativo",
       debito: 0,
     });

@@ -5,6 +5,13 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 
 const mockGetSession = vi.fn();
 
+function cpfAleatorio() {
+  const n = Math.floor(Math.random() * 1_000_000_000)
+    .toString()
+    .padStart(9, "0");
+  return `${n.slice(0, 3)}.${n.slice(3, 6)}.${n.slice(6, 9)}-00`;
+}
+
 vi.mock("next/headers", () => ({
   headers: vi.fn(async () => new Headers()),
 }));
@@ -56,7 +63,7 @@ describe("documentos-actions (integração com o banco de teste)", () => {
       rg: undefined,
       observacoes: undefined,
       telefone: "(11) 99999-9999",
-      cpf: `${Math.floor(Math.random() * 900 + 100)}.654.321-00`,
+      cpf: cpfAleatorio(),
       situacao: "ativo",
       debito: 0,
     });

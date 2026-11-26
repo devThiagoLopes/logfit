@@ -26,6 +26,13 @@ import { user } from "@/lib/db/schema";
 import { createAluno, deleteAluno } from "@/services/alunos";
 import { createDocumentoAluno } from "@/services/documentos-aluno";
 
+function cpfAleatorio() {
+  const n = Math.floor(Math.random() * 1_000_000_000)
+    .toString()
+    .padStart(9, "0");
+  return `${n.slice(0, 3)}.${n.slice(3, 6)}.${n.slice(6, 9)}-00`;
+}
+
 function streamDeTexto(texto: string) {
   return new ReadableStream({
     start(controller) {
@@ -60,7 +67,7 @@ describe("GET /alunos/documentos/[documentoId] (integração com o banco de test
       rg: undefined,
       observacoes: undefined,
       telefone: "(11) 99999-9999",
-      cpf: `${Math.floor(Math.random() * 900 + 100)}.111.222-00`,
+      cpf: cpfAleatorio(),
       situacao: "ativo",
       debito: 0,
     });
