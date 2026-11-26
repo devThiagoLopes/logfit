@@ -19,7 +19,7 @@ export function PagamentoAcaoCell({
   if (!pendente) return null;
 
   return (
-    <div onClick={(event) => event.stopPropagation()}>{/* NOSONAR: wrapper só interrompe o bubbling do clique da linha da tabela; não há role ARIA apropriado para um contêiner que apenas captura eventos dos botões filhos (ver docs do jsx-a11y/no-static-element-interactions). */}
+    <div onClick={(event) => event.stopPropagation()}>
       <ConcluirPagamentoDialog
         pagamentoId={pagamentoId}
         alunoNome={alunoNome}
